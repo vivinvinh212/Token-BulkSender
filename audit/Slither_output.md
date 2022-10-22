@@ -1,3 +1,9 @@
+![image](https://user-images.githubusercontent.com/83176944/197341743-3419f839-7ce0-4c81-9647-d093144721d6.png)
+![image](https://user-images.githubusercontent.com/83176944/197341803-0205c900-2f1f-43d4-aca5-8486780e273b.png)
+![image](https://user-images.githubusercontent.com/83176944/197341864-e0cb9148-3e8e-40ce-ac28-85b8b759e168.png)
+![image](https://user-images.githubusercontent.com/83176944/197341889-6bef8b55-8fd1-4e86-9c7f-d4c3acd202f9.png)
+![image](https://user-images.githubusercontent.com/83176944/197341918-51055a83-3b3a-4769-bf21-f01fbf801a12.png)
+
 Compilation warnings/errors on .\BulkSender.sol:
 .\BulkSender.sol:94:9: Warning: Invoking events without "emit" prefix is deprecated.   
         Transfer(msg.sender, _to, _value);
