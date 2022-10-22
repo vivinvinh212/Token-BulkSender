@@ -1,73 +1,92 @@
-pragma solidity ^ 0.4.0;
+pragma solidity ^0.4.0;
 
 /**
  * @title BulkSender, support ETH and ERC20 Tokens, send ether or erc20 token to multiple addresses in batch
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
 library SafeMath {
-    function mul(uint a, uint b) internal pure returns(uint) {
+    function mul(uint a, uint b) internal pure returns (uint) {
         uint c = a * b;
         require(a == 0 || c / a == b);
         return c;
     }
-    function div(uint a, uint b) internal pure returns(uint) {
+
+    function div(uint a, uint b) internal pure returns (uint) {
         require(b > 0);
         uint c = a / b;
-        require(a == b * c + a % b);
+        require(a == b * c + (a % b));
         return c;
     }
-    function sub(uint a, uint b) internal pure returns(uint) {
+
+    function sub(uint a, uint b) internal pure returns (uint) {
         require(b <= a);
         return a - b;
     }
-    function add(uint a, uint b) internal pure returns(uint) {
+
+    function add(uint a, uint b) internal pure returns (uint) {
         uint c = a + b;
         require(c >= a);
         return c;
     }
-    function max64(uint64 a, uint64 b) internal pure returns(uint64) {
-        return a >= b ? a: b;
+
+    function max64(uint64 a, uint64 b) internal pure returns (uint64) {
+        return a >= b ? a : b;
     }
-    function min64(uint64 a, uint64 b) internal pure returns(uint64) {
-        return a < b ? a: b;
+
+    function min64(uint64 a, uint64 b) internal pure returns (uint64) {
+        return a < b ? a : b;
     }
-    function max256(uint256 a, uint256 b) internal pure returns(uint256) {
-        return a >= b ? a: b;
+
+    function max256(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
     }
-    function min256(uint256 a, uint256 b) internal pure returns(uint256) {
-        return a < b ? a: b;
+
+    function min256(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
     }
 }
 
 /**
  * @title Bulksender MultiSender, support ETH and ERC20 Tokens, send ether or erc20 token to multiple addresses in batch
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
 contract ERC20Basic {
     uint public totalSupply;
-    function balanceOf(address who) public constant returns(uint);
+
+    function balanceOf(address who) public constant returns (uint);
+
     function transfer(address to, uint value) public;
+
     event Transfer(address indexed from, address indexed to, uint value);
 }
 
 contract ERC20 is ERC20Basic {
-    function allowance(address owner, address spender) public constant returns(uint);
-    function transferFrom(address from, address to, uint value) public;
+    function allowance(address owner, address spender)
+        public
+        constant
+        returns (uint);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint value
+    ) public;
+
     function approve(address spender, uint value) public;
+
     event Approval(address indexed owner, address indexed spender, uint value);
 }
 
 /**
  * @title Bulksender MultiSender, support ETH and ERC20 Tokens
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
 contract BasicToken is ERC20Basic {
-
     using SafeMath for uint;
-    mapping(address =>uint) balances;
+    mapping(address => uint) balances;
 
     function transfer(address _to, uint _value) public {
         balances[msg.sender] = balances[msg.sender].sub(_value);
@@ -75,7 +94,7 @@ contract BasicToken is ERC20Basic {
         Transfer(msg.sender, _to, _value);
     }
 
-    function balanceOf(address _owner) public constant returns(uint balance) {
+    function balanceOf(address _owner) public constant returns (uint balance) {
         return balances[_owner];
     }
 }
@@ -83,12 +102,16 @@ contract BasicToken is ERC20Basic {
 /**
  * @title BulkSender MultiSender, support ETH and ERC20 Tokens, send ether or erc20 token to multiple addresses in batch
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
-contract StandardToken is BasicToken,ERC20 {
-    mapping(address => mapping(address =>uint)) allowed;
+contract StandardToken is BasicToken, ERC20 {
+    mapping(address => mapping(address => uint)) allowed;
 
-    function transferFrom(address _from, address _to, uint _value) public {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint _value
+    ) public {
         balances[_to] = balances[_to].add(_value);
         balances[_from] = balances[_from].sub(_value);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
@@ -101,7 +124,11 @@ contract StandardToken is BasicToken,ERC20 {
         Approval(msg.sender, _spender, _value);
     }
 
-    function allowance(address _owner, address _spender) public constant returns(uint remaining) {
+    function allowance(address _owner, address _spender)
+        public
+        constant
+        returns (uint remaining)
+    {
         return allowed[_owner][_spender];
     }
 }
@@ -109,7 +136,7 @@ contract StandardToken is BasicToken,ERC20 {
 /**
  * @title BulkSender MultiSender, support ETH and ERC20 Tokens, send ether or erc20 token to multiple addresses in batch
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
 contract Ownable {
     address public owner;
@@ -118,11 +145,12 @@ contract Ownable {
         owner = msg.sender;
     }
 
-    modifier onlyOwner {
+    modifier onlyOwner() {
         require(msg.sender == owner);
         _;
     }
-    function transferOwnership(address newOwner) onlyOwner public {
+
+    function transferOwnership(address newOwner) public onlyOwner {
         if (newOwner != address(0)) {
             owner = newOwner;
         }
@@ -132,10 +160,9 @@ contract Ownable {
 /**
  * @title BulkSender MultiSender, support ETH and ERC20 Tokens, send ether or erc20 token to multiple addresses in batch
  * @dev To Use this Dapp: https://bulksender.app
-*/
+ */
 
 contract BulkSender is Ownable {
-
     using SafeMath for uint;
 
     event LogTokenBulkSent(address token, uint256 total);
@@ -148,9 +175,9 @@ contract BulkSender is Ownable {
     mapping(address => bool) public vipList;
 
     /*
-  *  get balance
-  */
-    function getBalance(address _tokenAddress) onlyOwner public {
+     *  get balance
+     */
+    function getBalance(address _tokenAddress) public onlyOwner {
         address _receiverAddress = getReceiverAddress();
         if (_tokenAddress == address(0)) {
             require(_receiverAddress.send(address(this).balance));
@@ -163,9 +190,9 @@ contract BulkSender is Ownable {
     }
 
     /*
-  *  Register VIP
-  */
-    function registerVIP() payable public {
+     *  Register VIP
+     */
+    function registerVIP() public payable {
         require(msg.value >= VIPFee);
         address _receiverAddress = getReceiverAddress();
         require(_receiverAddress.send(msg.value));
@@ -173,42 +200,42 @@ contract BulkSender is Ownable {
     }
 
     /*
-  *  VIP list
-  */
-    function addToVIPList(address[] _vipList) onlyOwner public {
+     *  VIP list
+     */
+    function addToVIPList(address[] _vipList) public onlyOwner {
         for (uint i = 0; i < _vipList.length; i++) {
             vipList[_vipList[i]] = true;
         }
     }
 
     /*
-    * Remove address from VIP List by Owner
-  */
-    function removeFromVIPList(address[] _vipList) onlyOwner public {
+     * Remove address from VIP List by Owner
+     */
+    function removeFromVIPList(address[] _vipList) public onlyOwner {
         for (uint i = 0; i < _vipList.length; i++) {
             vipList[_vipList[i]] = false;
         }
     }
 
     /*
-        * Check isVIP
-    */
-    function isVIP(address _addr) public view returns(bool) {
+     * Check isVIP
+     */
+    function isVIP(address _addr) public view returns (bool) {
         return _addr == owner || vipList[_addr];
     }
 
     /*
-        * set receiver address
-    */
-    function setReceiverAddress(address _addr) onlyOwner public {
+     * set receiver address
+     */
+    function setReceiverAddress(address _addr) public onlyOwner {
         require(_addr != address(0));
         receiverAddress = _addr;
     }
 
     /*
-        * get receiver address
-    */
-    function getReceiverAddress() public view returns(address) {
+     * get receiver address
+     */
+    function getReceiverAddress() public view returns (address) {
         if (receiverAddress == address(0)) {
             return owner;
         }
@@ -217,21 +244,20 @@ contract BulkSender is Ownable {
     }
 
     /*
-        * set vip fee
-    */
-    function setVIPFee(uint _fee) onlyOwner public {
+     * set vip fee
+     */
+    function setVIPFee(uint _fee) public onlyOwner {
         VIPFee = _fee;
     }
 
     /*
-        * set tx fee
-    */
-    function setTxFee(uint _fee) onlyOwner public {
+     * set tx fee
+     */
+    function setTxFee(uint _fee) public onlyOwner {
         txFee = _fee;
     }
 
     function ethSendSameValue(address[] _to, uint _value) internal {
-
         uint sendAmount = _to.length.sub(1).mul(_value);
         uint remainingValue = msg.value;
 
@@ -248,11 +274,13 @@ contract BulkSender is Ownable {
             require(_to[i].send(_value));
         }
 
-        emit LogTokenBulkSent(0x000000000000000000000000000000000000bEEF, msg.value);
+        emit LogTokenBulkSent(
+            0x000000000000000000000000000000000000bEEF,
+            msg.value
+        );
     }
 
     function ethSendDifferentValue(address[] _to, uint[] _value) internal {
-
         uint sendAmount = _value[0];
         uint remainingValue = msg.value;
 
@@ -270,12 +298,17 @@ contract BulkSender is Ownable {
             remainingValue = remainingValue.sub(_value[i]);
             require(_to[i].send(_value[i]));
         }
-        emit LogTokenBulkSent(0x000000000000000000000000000000000000bEEF, msg.value);
-
+        emit LogTokenBulkSent(
+            0x000000000000000000000000000000000000bEEF,
+            msg.value
+        );
     }
 
-    function coinSendSameValue(address _tokenAddress, address[] _to, uint _value) internal {
-
+    function coinSendSameValue(
+        address _tokenAddress,
+        address[] _to,
+        uint _value
+    ) internal {
         uint sendValue = msg.value;
         bool vip = isVIP(msg.sender);
         if (!vip) {
@@ -292,10 +325,13 @@ contract BulkSender is Ownable {
         }
 
         emit LogTokenBulkSent(_tokenAddress, sendAmount);
-
     }
 
-    function coinSendDifferentValue(address _tokenAddress, address[] _to, uint[] _value) internal {
+    function coinSendDifferentValue(
+        address _tokenAddress,
+        address[] _to,
+        uint[] _value
+    ) internal {
         uint sendValue = msg.value;
         bool vip = isVIP(msg.sender);
         if (!vip) {
@@ -312,21 +348,20 @@ contract BulkSender is Ownable {
             token.transferFrom(msg.sender, _to[i], _value[i]);
         }
         emit LogTokenBulkSent(_tokenAddress, sendAmount);
-
     }
 
     /*
         Send ether with the same value by a explicit call method
     */
 
-    function sendEth(address[] _to, uint _value) payable public {
+    function sendEth(address[] _to, uint _value) public payable {
         ethSendSameValue(_to, _value);
     }
 
     /*
         Send ether with the different value by a explicit call method
     */
-    function bulksend(address[] _to, uint[] _value) payable public {
+    function bulksend(address[] _to, uint[] _value) public payable {
         ethSendDifferentValue(_to, _value);
     }
 
@@ -334,7 +369,10 @@ contract BulkSender is Ownable {
         Send ether with the different value by a implicit call method
     */
 
-    function bulkSendETHWithDifferentValue(address[] _to, uint[] _value) payable public {
+    function bulkSendETHWithDifferentValue(address[] _to, uint[] _value)
+        public
+        payable
+    {
         ethSendDifferentValue(_to, _value);
     }
 
@@ -342,7 +380,10 @@ contract BulkSender is Ownable {
         Send ether with the same value by a implicit call method
     */
 
-    function bulkSendETHWithSameValue(address[] _to, uint _value) payable public {
+    function bulkSendETHWithSameValue(address[] _to, uint _value)
+        public
+        payable
+    {
         ethSendSameValue(_to, _value);
     }
 
@@ -350,28 +391,44 @@ contract BulkSender is Ownable {
         Send coin with the same value by a implicit call method
     */
 
-    function bulkSendCoinWithSameValue(address _tokenAddress, address[] _to, uint _value) payable public {
+    function bulkSendCoinWithSameValue(
+        address _tokenAddress,
+        address[] _to,
+        uint _value
+    ) public payable {
         coinSendSameValue(_tokenAddress, _to, _value);
     }
 
     /*
         Send coin with the different value by a implicit call method, this method can save some fee.
     */
-    function bulkSendCoinWithDifferentValue(address _tokenAddress, address[] _to, uint[] _value) payable public {
+    function bulkSendCoinWithDifferentValue(
+        address _tokenAddress,
+        address[] _to,
+        uint[] _value
+    ) public payable {
         coinSendDifferentValue(_tokenAddress, _to, _value);
     }
 
     /*
         Send coin with the different value by a explicit call method
     */
-    function bulksendToken(address _tokenAddress, address[] _to, uint[] _value) payable public {
+    function bulksendToken(
+        address _tokenAddress,
+        address[] _to,
+        uint[] _value
+    ) public payable {
         coinSendDifferentValue(_tokenAddress, _to, _value);
     }
+
     /*
         Send coin with the same value by a explicit call method
     */
-    function drop(address _tokenAddress, address[] _to, uint _value) payable public {
+    function drop(
+        address _tokenAddress,
+        address[] _to,
+        uint _value
+    ) public payable {
         coinSendSameValue(_tokenAddress, _to, _value);
     }
-
 }
